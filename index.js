@@ -25,7 +25,6 @@ const SHADOW_STORAGE_KEY = 'fallingTextApp_hasTextShadow';
 const BG_IMAGE_STORAGE_KEY = 'fallingTextApp_backgroundImage';
 const SPEED_STORAGE_KEY = 'fallingTextApp_speed'; // Tambahkan key localStorage
 
-
 // DOM Elements
 let appContainer = null;
 let textInput = null;
@@ -44,6 +43,13 @@ let clearBgImageButton = null;
 // Hapus variabel speedInput dan speedValueSpan
 let speedSelect = null;
 
+let animationMode = 'zigzag'; // 'zigzag' atau 'berurutan'
+let sequentialIndex = 0; // Untuk mode berurutan
+
+// Tambahkan referensi DOM untuk mode toggle
+let modeZigzagRadio = null;
+let modeBerurutanRadio = null;
+
 function initDOMReferences() {
     appContainer = document.getElementById('app-container');
     textInput = document.getElementById('text-input');
@@ -59,6 +65,8 @@ function initDOMReferences() {
     bgImageInput = document.getElementById('bg-image-input');
     clearBgImageButton = document.getElementById('clear-bg-image-button');
     speedSelect = document.getElementById('speed-select');
+    modeZigzagRadio = document.getElementById('mode-zigzag');
+    modeBerurutanRadio = document.getElementById('mode-berurutan');
 }
 
 function updateRootVariables() {
@@ -108,14 +116,32 @@ function createFallingTextElement() {
     const textElement = document.createElement('div');
     textElement.classList.add('falling-text');
     textElement.textContent = currentText;
-    
+
     const fontSize = Number(currentFontSize) || 20;
-    // Estimate width to prevent text going off-screen too much. This is a rough estimate.
-    const approxTextWidth = currentText.length * (fontSize * 0.6); 
-    const maxLeft = Math.max(0, window.innerWidth - approxTextWidth - 10); // 10 for some padding
-    textElement.style.left = `${Math.random() * maxLeft}px`;
-    // Start further up to ensure it's fully off-screen initially
-    textElement.style.top = `-${fontSize * 2}px`; 
+    const approxTextWidth = currentText.length * (fontSize * 0.6);
+
+    if (animationMode === 'zigzag') {
+        const maxLeft = Math.max(0, window.innerWidth - approxTextWidth - 10);
+        const startLeft = Math.random() * maxLeft;
+        textElement.style.left = `${startLeft}px`;
+        textElement.style.top = `-${fontSize * 2}px`;
+
+        // Zig-zag data
+        textElement.dataset.startLeft = startLeft;
+        textElement.dataset.amplitude = 5 + Math.random() * 10;
+        textElement.dataset.frequency = 0.005 + Math.random() * 0.005;
+        textElement.dataset.startTime = Date.now();
+        textElement.dataset.zigzag = "1";
+    } else {
+        // Mode berurutan rapi
+        const totalSlots = Math.floor(window.innerWidth / (approxTextWidth + 20));
+        const slot = sequentialIndex % totalSlots;
+        const left = slot * (approxTextWidth + 20) + 10;
+        textElement.style.left = `${left}px`;
+        textElement.style.top = `-${fontSize * 2}px`;
+        sequentialIndex++;
+        textElement.dataset.zigzag = "0";
+    }
 
     appContainer.appendChild(textElement);
 }
@@ -124,15 +150,28 @@ function animateRain() {
     if (!appContainer) return;
 
     const textElements = appContainer.querySelectorAll('.falling-text');
-    
+    const now = Date.now();
+
     textElements.forEach(element => {
         let currentTop = parseFloat(element.style.top || "0");
-        currentTop += currentSpeed; // Gunakan currentSpeed
+        currentTop += currentSpeed;
+
+        if (element.dataset.zigzag === "1") {
+            // Zig-zag horizontal
+            const startLeft = parseFloat(element.dataset.startLeft || "0");
+            const amplitude = parseFloat(element.dataset.amplitude || "50");
+            const frequency = parseFloat(element.dataset.frequency || "0.008");
+            const startTime = parseInt(element.dataset.startTime || now, 10);
+            const elapsed = now - startTime;
+            const offsetX = Math.sin(elapsed * frequency) * amplitude;
+            element.style.left = `${startLeft + offsetX}px`;
+        }
+        // Untuk mode berurutan, biarkan posisi X tetap
+
+        element.style.top = `${currentTop}px`;
 
         if (currentTop > window.innerHeight) {
             element.remove();
-        } else {
-            element.style.top = `${currentTop}px`;
         }
     });
 
@@ -245,6 +284,21 @@ function setupControls() {
         speedSelect.addEventListener('change', (e) => {
             currentSpeed = parseFloat(e.target.value);
             saveSettings();
+        });
+    }
+
+    // Mode toggle event
+    if (modeZigzagRadio && modeBerurutanRadio) {
+        modeZigzagRadio.addEventListener('change', () => {
+            if (modeZigzagRadio.checked) {
+                animationMode = 'zigzag';
+            }
+        });
+        modeBerurutanRadio.addEventListener('change', () => {
+            if (modeBerurutanRadio.checked) {
+                animationMode = 'berurutan';
+                sequentialIndex = 0; // Reset urutan agar rapi
+            }
         });
     }
 }

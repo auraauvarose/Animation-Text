@@ -206,6 +206,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            padding-right: 20px;
         }
 
         #speed-controls-container label {
@@ -221,6 +222,30 @@
             padding: 5px 8px;
             font-size: 14px;
             cursor: pointer;
+        }
+
+        #mode-controls-container {
+            position: fixed;
+            bottom: 65px;
+            left: 630px;
+            z-index: 1002;
+            background: rgba(30,30,30,0.85);
+            color: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+            margin-left: 20px;
+        }
+
+        #mode-controls-container label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        #mode-controls-container input[type="radio"] {
+            margin-right: 8px;
+            accent-color: #007bff;
         }
     </style>
 </head>
@@ -293,6 +318,18 @@
             <option value="9">9x</option>
             <option value="10">10x</option>
         </select>
+    </div>
+
+    <div id="mode-controls-container">
+        <label>
+            <input type="radio" name="mode" id="mode-zigzag" value="zigzag" checked>
+            Zig-Zag
+        </label>
+        <br>
+        <label>
+            <input type="radio" name="mode" id="mode-berurutan" value="berurutan">
+            Berurutan Rapi
+        </label>
     </div>
 
 
