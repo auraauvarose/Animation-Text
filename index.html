@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Falling Text Animation</title>
+    <style>
+        :root {
+            --text-color: #39FF14; /* Neon Green */
+            --background-color: #000000; /* Black */
+            --font-size: 20px;
+            --font-weight: normal;
+            --font-style: normal;
+            --text-shadow: none;
+            --background-image: none; /* New variable for background image */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Prevent scrollbars from the main page */
+        }
+
+        #app-container {
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--background-color);
+            background-image: var(--background-image); /* Use the CSS variable */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            overflow: hidden; /* Important for containing falling elements */
+            transition: background-color 0.3s ease, background-image 0.3s ease;
+        }
+
+        .falling-text {
+            position: absolute;
+            white-space: nowrap;
+            user-select: none;
+            color: var(--text-color);
+            font-size: var(--font-size);
+            font-weight: var(--font-weight);
+            font-style: var(--font-style);
+            text-shadow: var(--text-shadow);
+            transition: color 0.3s ease, font-size 0.3s ease, font-weight 0.3s ease, font-style 0.3s ease, text-shadow 0.3s ease;
+            will-change: transform, color, font-size, font-weight, font-style, text-shadow; /* Optimize for animation */
+        }
+
+        #controls-toggle-button {
+            position: fixed;
+            top: 15px;
+            left: 30px;
+            z-index: 1001;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #controls-panel {
+            position: fixed;
+            top: 0;
+            left: -300px; /* Initially hidden */
+            width: 280px;
+            height: 100%;
+            background-color: rgba(30, 30, 30, 0.95);
+            color: #f0f0f0;
+            padding: 20px;
+            padding-top: 70px; /* Space for the toggle button */
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Adjusted gap */
+            overflow-y: auto;
+        }
+
+        #controls-panel.open {
+            left: 0;
+        }
+
+        #controls-panel h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #007bff;
+            text-align: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        #controls-panel label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        #controls-panel .control-group {
+            margin-bottom: 10px;
+        }
+
+        #controls-panel input[type="text"],
+        #controls-panel input[type="color"],
+        #controls-panel input[type="range"],
+        #controls-panel input[type="file"] { /* Added file input styling */
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: #f0f0f0;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        #controls-panel input[type="file"] {
+             padding: 5px; /* Specific padding for file input */
+        }
+        
+        #controls-panel button { /* Styling for new button */
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #controls-panel button:hover {
+            background-color: #0056b3;
+        }
+
+
+        #controls-panel input[type="color"] {
+            height: 45px;
+            padding: 5px; /* Adjust padding for color input */
+        }
+        
+        #controls-panel input[type="range"] {
+            padding: 0; /* Range input has its own padding */
+        }
+
+        #controls-panel .checkbox-control {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        #controls-panel .checkbox-control input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto; /* Override general input width */
+            height: auto; /* Override general input height */
+            accent-color: #007bff;
+        }
+         #controls-panel .checkbox-control label {
+            margin-bottom: 0; /* Align with checkbox */
+            font-size: 14px;
+            user-select: none; /* Allow clicking label to toggle */
+        }
+
+
+        #font-size-value {
+            display: block;
+            text-align: right;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        #controls-heading {
+            padding-top: 20px;
+        }
+
+        /* Accessibility improvements */
+        #controls-toggle-button[aria-expanded="true"] + #controls-panel {
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Falling text will be injected here by JavaScript -->
+    </div>
+
+    <button id="controls-toggle-button" aria-expanded="false" aria-controls="controls-panel">
+        Controls
+    </button>
+
+    <div id="controls-panel" role="region" aria-labelledby="controls-heading" aria-hidden="true">
+        <h2 id="controls-heading">Customize Animation</h2>
+        
+        <div class="control-group">
+            <label for="text-input">Text:</label>
+            <input type="text" id="text-input" value="i love you">
+        </div>
+        
+        <div class="control-group">
+            <label for="text-color-input">Text Color:</label>
+            <input type="color" id="text-color-input" value="#39FF14">
+        </div>
+        
+        <div class="control-group">
+            <label for="font-size-input">Text Size:</label>
+            <input type="range" id="font-size-input" min="10" max="72" value="20">
+            <span id="font-size-value">20px</span>
+        </div>
+
+        <div class="control-group checkbox-control">
+            <input type="checkbox" id="bold-toggle">
+            <label for="bold-toggle">Bold</label>
+        </div>
+
+        <div class="control-group checkbox-control">
+            <input type="checkbox" id="italic-toggle">
+            <label for="italic-toggle">Italic</label>
+        </div>
+        
+        <div class="control-group checkbox-control">
+            <input type="checkbox" id="shadow-toggle">
+            <label for="shadow-toggle">Text Shadow</label>
+        </div>
+        
+        <div class="control-group">
+            <label for="bg-color-input">Background Color:</label>
+            <input type="color" id="bg-color-input" value="#000000">
+        </div>
+
+        <div class="control-group">
+            <label for="bg-image-input">Background Image:</label>
+            <input type="file" id="bg-image-input" accept="image/*">
+            <button id="clear-bg-image-button">Clear Image</button>
+        </div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
