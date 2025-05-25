@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Falling Text Animation</title>
+    <link rel="icon" href="profile.jpg">
     <style>
         :root {
             --text-color: #39FF14; /* Neon Green */
@@ -187,6 +187,41 @@
         #controls-toggle-button[aria-expanded="true"] + #controls-panel {
             left: 0;
         }
+
+         /* Accessibility improvements */
+        #controls-toggle-button[aria-expanded="true"] + #controls-panel {
+            left: 0;
+        }
+
+        #speed-controls-container {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            z-index: 1001;
+            background-color: rgba(30, 30, 30, 0.85);
+            color: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #speed-controls-container label {
+            font-size: 14px;
+            margin-bottom: 0; /* Override general label margin */
+        }
+
+        #speed-controls-container select {
+            background-color: #333;
+            color: #f0f0f0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -195,11 +230,11 @@
     </div>
 
     <button id="controls-toggle-button" aria-expanded="false" aria-controls="controls-panel">
-        Controls
+        Control Panel Customize
     </button>
 
     <div id="controls-panel" role="region" aria-labelledby="controls-heading" aria-hidden="true">
-        <h2 id="controls-heading">Customize Animation</h2>
+        <h2 id="controls-heading">Customize</h2>
         
         <div class="control-group">
             <label for="text-input">Text:</label>
@@ -243,6 +278,23 @@
             <button id="clear-bg-image-button">Clear Image</button>
         </div>
     </div>
+
+    <div id="speed-controls-container">
+        <label for="speed-select">Speed:</label>
+        <select id="speed-select" aria-label="Animation speed">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
+            <option value="5">5x</option>
+            <option value="6">6x</option>
+            <option value="7">7x</option>
+            <option value="8">8x</option>
+            <option value="9">9x</option>
+            <option value="10">10x</option>
+        </select>
+    </div>
+
 
     <script type="module" src="index.js"></script>
 </body>

@@ -1,4 +1,3 @@
-
 // State variables
 let currentText = "i love you";
 let currentTextColor = "#39FF14"; // Neon Green
@@ -9,6 +8,8 @@ let isItalic = false;
 let hasTextShadow = false;
 const PREDEFINED_TEXT_SHADOW = "2px 2px 5px rgba(0,0,0,0.7)";
 let currentBackgroundImage = null; // For storing Data URL of the background image
+
+let currentSpeed = 1.5; // Tambahkan variabel kecepatan default
 
 const fallSpeed = 1.5; // pixels per frame
 const spawnInterval = 150; // milliseconds, for denser rain
@@ -22,6 +23,7 @@ const BOLD_STORAGE_KEY = 'fallingTextApp_isBold';
 const ITALIC_STORAGE_KEY = 'fallingTextApp_isItalic';
 const SHADOW_STORAGE_KEY = 'fallingTextApp_hasTextShadow';
 const BG_IMAGE_STORAGE_KEY = 'fallingTextApp_backgroundImage';
+const SPEED_STORAGE_KEY = 'fallingTextApp_speed'; // Tambahkan key localStorage
 
 
 // DOM Elements
@@ -39,6 +41,9 @@ let shadowToggle = null;
 let bgImageInput = null;
 let clearBgImageButton = null;
 
+// Hapus variabel speedInput dan speedValueSpan
+let speedSelect = null;
+
 function initDOMReferences() {
     appContainer = document.getElementById('app-container');
     textInput = document.getElementById('text-input');
@@ -53,6 +58,7 @@ function initDOMReferences() {
     shadowToggle = document.getElementById('shadow-toggle');
     bgImageInput = document.getElementById('bg-image-input');
     clearBgImageButton = document.getElementById('clear-bg-image-button');
+    speedSelect = document.getElementById('speed-select');
 }
 
 function updateRootVariables() {
@@ -76,6 +82,7 @@ function loadSettings() {
     isItalic = localStorage.getItem(ITALIC_STORAGE_KEY) === 'true';
     hasTextShadow = localStorage.getItem(SHADOW_STORAGE_KEY) === 'true';
     currentBackgroundImage = localStorage.getItem(BG_IMAGE_STORAGE_KEY); // Can be null
+    currentSpeed = parseFloat(localStorage.getItem(SPEED_STORAGE_KEY) || "1.5");
 }
 
 function saveSettings() {
@@ -91,6 +98,7 @@ function saveSettings() {
     } else {
         localStorage.removeItem(BG_IMAGE_STORAGE_KEY);
     }
+    localStorage.setItem(SPEED_STORAGE_KEY, currentSpeed.toString());
 }
 
 
@@ -119,7 +127,7 @@ function animateRain() {
     
     textElements.forEach(element => {
         let currentTop = parseFloat(element.style.top || "0");
-        currentTop += fallSpeed;
+        currentTop += currentSpeed; // Gunakan currentSpeed
 
         if (currentTop > window.innerHeight) {
             element.remove();
@@ -134,7 +142,7 @@ function animateRain() {
 function setupControls() {
     if (!textInput || !textColorInput || !bgColorInput || !fontSizeInput || !fontSizeValueSpan || 
         !controlsToggleButton || !controlsPanel || !boldToggle || !italicToggle || !shadowToggle ||
-        !bgImageInput || !clearBgImageButton) {
+        !bgImageInput || !clearBgImageButton || !speedSelect) {
         console.error("One or more control elements are missing from the DOM. Setup cannot complete.");
         return;
     }
@@ -150,6 +158,10 @@ function setupControls() {
     boldToggle.checked = isBold;
     italicToggle.checked = isItalic;
     shadowToggle.checked = hasTextShadow;
+    // Set nilai awal speed-select dari currentSpeed
+    if (speedSelect) {
+        speedSelect.value = String(currentSpeed);
+    }
     // Note: bgImageInput doesn't need a value set here, its state is handled by the presence of currentBackgroundImage
     
     updateRootVariables(); // Apply loaded settings to CSS
@@ -227,6 +239,14 @@ function setupControls() {
         updateRootVariables();
         saveSettings();
     });
+
+    // Event listener untuk speed-select
+    if (speedSelect) {
+        speedSelect.addEventListener('change', (e) => {
+            currentSpeed = parseFloat(e.target.value);
+            saveSettings();
+        });
+    }
 }
 
 
